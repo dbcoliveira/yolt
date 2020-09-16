@@ -1,0 +1,184 @@
+#include "cpuid.h"
+#include "utils.h"
+
+// vendorid[s] = (res[e] >> (8*i)) & 0xff;
+
+unsigned char *videomem = (unsigned char*) (0x00b8000 |0x20);
+
+void write(const char *string)
+{
+        while (*string != 0)
+        {
+                *videomem++=*string++;
+                *videomem++=6;
+        }
+}
+/*
+int strlen(const char *str)
+{
+	const char *s;
+
+	for (s = str; *s; ++s) ;
+
+	return (s - str);
+}
+*/
+char *itoa(int val, int base)
+{
+	static char buf[32] = {0};
+	int i=30;
+
+	for(; val && i ; i--, val /= base)
+		buf[i] ="0123456789abcdef"[val % base];
+
+	return &buf[i+1];
+}
+
+void cpuid(unsigned long idx, unsigned long reg[]) 
+{
+	__asm__ volatile ("cpuid"
+			  : "=a" (reg[0]), 
+			    "=b" (reg[1]),
+			    "=c" (reg[2]),
+			    "=d" (reg[3])
+			  : "a" (idx));
+}
+
+const char *getbrandindex()
+{
+		// 3 cpuid's * 4 registers * 4 bytes 
+        static char brandindex[3*4*4];
+		unsigned long reg[4];
+
+		int r, s;
+		for (s = -1, r = 2; r <= 4; r++) 
+		{
+			cpuid(0x80000000+r, reg);
+        	for(int i = 0 ; i <= 0xf; i++)
+          		brandindex[++s]= ((char*)reg)[i];
+		}
+
+       return brandindex;
+}
+
+const char *getvendorname()
+{
+        // 1 cpuid * 3 registers * 4 bytes
+		static char vendorid[3*4];
+		unsigned long reg[4];
+		
+        cpuid(0, reg);
+		
+		unsigned int tmpreg = {reg[2]};
+		reg[2] = reg[3];
+		reg[3] = tmpreg;
+
+		int i ,s;
+        for( s = -1 , i=1 ; i <= 0xf; i++)
+			if (((char*)reg)[i] != 0 )
+          		vendorid[++s]= ((char*)reg)[i];
+
+	    return vendorid;
+}
+
+void getinfo()
+{
+	unsigned long reg[4];
+
+	cpuid(1, reg);
+	int stepping = reg[0] & 0x000f;
+    int model = reg[0] & 0x00f0;
+	int family =  ((( 1 << 12)-1) & (reg[0] >> (9 - 1)));
+	int cputype = ((( 1 << 14)-1) & (reg[0] >> (13 - 1)));
+	
+	write(",stepping=");
+	write(itoa(stepping, 16));
+	write(",model=");
+	write(itoa(model, 16));	
+	write(",family=");
+	write(itoa(family, 16));	
+	write(",cputype=");
+	write(itoa(cputype, 16));
+	if (cputype == 0)
+		write("0");
+
+
+	for (int i = 0 ; i <= 31; i++){
+		 write(check_bit(reg[3], i) ? CPU_featureS1Str[i] : "");
+		 write(" ");
+		 //write(check_bit(reg[2], i) ? CPU_featureS0Str[i]: "");
+	}
+}
+
+bool cpu_feature(unsigned long cpuidmode , unsigned char feature)
+{
+	unsigned long reg[4];
+	
+	switch (cpuidmode) {
+		case CPUID_0:
+			cpuid(CPUID_0, reg);
+			return check_bit(reg[3], feature);
+		case CPUID_EXT_0:
+			cpuid(CPUID_EXT_0, reg);
+			return check_bit(reg[3], feature);
+		default:
+			return false;
+	}
+}
+
+void kernel_noproceed(char *msg) 
+{
+	write("yolt:");
+	write(msg);
+	write("yolt: Cannot proceed. System halted.");
+	while(1);
+}
+
+void kernel_main() 
+{	
+//	unsigned char *vm = (unsigned char*) (0xb8000);
+
+
+		
+	__asm__ volatile ("nop\n\t");
+	//write("yolt: kernel PE enable.");
+
+	//write(getvendorname());
+	//getinfo();
+//	write(",brandindex=");
+//	write(getbrandindex());
+//getbrandindex();
+	
+	
+
+	if (cpu_feature(CPUID_EXT_0, CPU_flag_lm))
+		longmode_entry();
+		
+
+	//((unsigned long long*)0xb8000)= 0x1f6c1f6c1f651f48;
+	
+/*
+	const char* string = "HELLO";
+
+        while (*string != 0)
+        {
+                *vm++=*string++;
+                *vm++=8;
+        }
+*/
+
+/*
+		__asm__ (   ".code64\n\t"					
+					" movl $0x1f6c1f6c1f651f48, 0xb8000\n\t"
+		);
+*/		
+/*
+		__asm__ (
+			    "mov $0xfe, %eax\n\t"
+    "out %eax, $0x64\n\t"
+		);
+*/		
+	//main64();
+	while(1);
+}
+
