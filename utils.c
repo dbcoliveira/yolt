@@ -35,24 +35,24 @@ int strlen(const char *str)
 
 char *strncpy(char *dst, const char *src, int n)
 {
-   int i;
-   char *temp = dst;  
-   for (i = 0; i < n; i++)
-      *dst++ = *src++;
-   return temp;
+   	int i;
+   	char *temp = dst;  
+   	for (i = 0; i < n; i++)
+      		*dst++ = *src++;
+   	return temp;
 }
 
 void *memset(void *b, char c, u16_t len)
 {
-    u16_t i = 0;
-    unsigned char *p = b;
-    while (len >0) 
-    {
-            *p = c;
-            p++;
-            len--;
-    }
-    return b;
+	u16_t i = 0;
+	unsigned char *p = b;
+    	while (len >0) 
+    	{
+            	*p = c;
+            	p++;
+            	len--;
+    	}
+    	return b;
 }
 
 int strncmp(const char *s1, const char *s2, u8_t n)
