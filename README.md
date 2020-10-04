@@ -1,7 +1,7 @@
 # yolt
 Yolt, a exploratory unikernel implementation 
 
-Yolt prototype was built during covid19 lockdown (jun-jul 2020). The intention was to become up to date with x86-64 architecture on unikernel and microkernel developments. Initial focus has been on non-uniform and symmetric multiprocessing and paging organisation.
+Yolt prototype was built during covid19 lockdown (May-Jun 2020). The intention was to become up to date with x86-64 architecture on unikernel and microkernel developments. Initial focus has been on non-uniform and symmetric multiprocessing and paging organisation.
 
 ## Implementation
 
