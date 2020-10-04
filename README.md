@@ -15,7 +15,7 @@ bump allocator next.
 
 KVM
 
-## Build
+## Building from source
 
 *KVM needs to be installed.*
 
