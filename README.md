@@ -13,11 +13,11 @@ bump allocator next.
 
 ## Run time
 
-KVM
+QEMU-KVM
 
 ## Building from source
 
-*KVM needs to be installed.*
+*QEMU-KVM needs to be installed.*
 
 ```
 $ make image && make run
